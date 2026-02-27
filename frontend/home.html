@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>كارو لينا – مستحضرات التجميل</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Playfair+Display:ital@1&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap RTL -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="./css/home.css" />
+  </head>
+  <body>
+    <!-- PAGE LOADER -->
+    <div id="page-loader">
+      <div class="loader-logo">كارو<span>لينا</span></div>
+    </div>
+
+    <!-- SCROLL TOP -->
+    <button id="scroll-top"><i class="fas fa-arrow-up"></i></button>
+
+    <!-- TOAST -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div
+        id="cart-toast"
+        class="toast align-items-center"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div class="d-flex">
+          <div class="toast-body fw-bold" id="toast-msg">
+            تمت الإضافة إلى السلة ✓
+          </div>
+          <button
+            type="button"
+            class="btn-close me-2 m-auto"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="brand-logo" href="./home.html">كارو<span>لينا</span></a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navMenu"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="./home.html">الرئيسية</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./products.html">المنتجات</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./contact.html">تواصل معنا</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./about-us.html">من نحن</a>
+            </li>
+          </ul>
+          <button
+            class="cart-btn"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#cartDrawer"
+          >
+            <i class="fas fa-shopping-bag"></i>
+            <span style="padding-top: 2.7px"> سلة التسوق</span>
+            <!-- عشان الموبااايل -->
+            <span class="cart-count" id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ══ HERO – 90vh ══ -->
+    <section class="hero">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-6">
+            <div class="hero-badge">
+              <i class="fas fa-sparkles"></i> مجموعة 2025 الجديدة
+            </div>
+            <h1>اكتشفي<br /><span>جمالك الطبيعي</span></h1>
+            <p>
+              استعرضي مجموعتنا المختارة من مستحضرات التجميل الفاخرة المصنوعة بحب
+              ومكونات طبيعية، والمخصصة لإشراقة بشرتك.
+            </p>
+            <div class="d-flex gap-3 mt-4 flex-wrap">
+              <a href="#products" class="btn-rose"
+                >تسوقي الآن <i class="fas fa-arrow-left"></i
+              ></a>
+              <a href="#categories" class="btn-outline-rose">تصفح التصنيفات</a>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <strong>+50</strong><span>منتج مميز</span>
+              </div>
+              <div class="hero-stat">
+                <strong>+10K</strong><span>عميلة سعيدة</span>
+              </div>
+              <div class="hero-stat">
+                <strong>100%</strong><span>طبيعي</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="hero-img-wrap">
+              <img
+                src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=700&q=80"
+                alt="مستحضرات تجميل"
+              />
+              <div class="hero-img-badge">
+                <i class="fas fa-star"></i>
+                <div>
+                  <div style="font-size: 0.8rem; color: #666">
+                    تقييم العملاء
+                  </div>
+                  <div>4.9 / 5</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CATEGORIES ══ -->
+    <section class="categories-section" id="categories">
+      <div class="container">
+        <div class="section-header">
+          <h2>تسوقي حسب التصنيف</h2>
+          <p>استعرضي مجموعاتنا المختارة بعناية لتعزيز جمالك الطبيعي</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4 col-6">
+            <div
+              class="category-card"
+              onclick="filterByCategory('العناية بالبشرة')"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=75"
+                alt="العناية بالبشرة"
+              />
+              <div class="category-overlay"></div>
+              <div class="category-info">
+                <i class="fas fa-spa"></i>
+                <h5>العناية بالبشرة</h5>
+                <small>تغذية وإشراقة</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-6">
+            <div class="category-card" onclick="filterByCategory('مكياج')">
+              <img
+                src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=75"
+                alt="مكياج"
+              />
+              <div class="category-overlay"></div>
+              <div class="category-info">
+                <i class="fas fa-heart"></i>
+                <h5>مكياج</h5>
+                <small>عبّري عن نفسك</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-6">
+            <div class="category-card" onclick="filterByCategory('عطور')">
+              <img
+                src="https://images.unsplash.com/photo-1541643600914-78b084683702?w=500&q=75"
+                alt="عطور"
+              />
+              <div class="category-overlay"></div>
+              <div class="category-info">
+                <i class="fas fa-wind"></i>
+                <h5>عطور</h5>
+                <small>روائح ساحرة</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-6">
+            <div
+              class="category-card"
+              onclick="filterByCategory('العناية بالشعر')"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=75"
+                alt="العناية بالشعر"
+              />
+              <div class="category-overlay"></div>
+              <div class="category-info">
+                <i class="fas fa-cut"></i>
+                <h5>العناية بالشعر</h5>
+                <small>حرير ولمعان</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div
+              class="category-card"
+              onclick="filterByCategory('العناية بالجسم')"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=75"
+                alt="العناية بالجسم"
+              />
+              <div class="category-overlay"></div>
+              <div class="category-info">
+                <i class="fas fa-bath"></i>
+                <h5>العناية بالجسم</h5>
+                <small>دلّلي نفسك</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ PRODUCTS ══ -->
+    <section class="products-section" id="products">
+      <div class="container">
+        <div class="section-header mb-3">
+          <h2>المنتجات المميزة</h2>
+          <p>اكتشفي أفضل منتجاتنا المحبوبة من آلاف العميلات</p>
+        </div>
+
+        <div
+          class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
+        >
+          <div class="d-flex flex-wrap gap-2" id="filter-buttons">
+            <button
+              class="filter-btn active"
+              onclick="filterByCategory('الكل')"
+            >
+              الكل
+            </button>
+            <button
+              class="filter-btn"
+              onclick="filterByCategory('العناية بالبشرة')"
+            >
+              العناية بالبشرة
+            </button>
+            <button class="filter-btn" onclick="filterByCategory('مكياج')">
+              مكياج
+            </button>
+            <button class="filter-btn" onclick="filterByCategory('عطور')">
+              عطور
+            </button>
+            <button
+              class="filter-btn"
+              onclick="filterByCategory('العناية بالشعر')"
+            >
+              العناية بالشعر
+            </button>
+            <button
+              class="filter-btn"
+              onclick="filterByCategory('العناية بالجسم')"
+            >
+              العناية بالجسم
+            </button>
+          </div>
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input
+              type="text"
+              id="search-input"
+              placeholder="ابحثي عن منتج..."
+              oninput="searchProducts()"
+            />
+          </div>
+        </div>
+
+        <div class="row g-4" id="products-grid">
+          <div class="col-lg-3 col-md-4 col-sm-6" id="sk1">
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <div class="col-lg-3 col-md-4 col-sm-6" id="sk2">
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <div class="col-lg-3 col-md-4 col-sm-6" id="sk3">
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <div class="col-lg-3 col-md-4 col-sm-6" id="sk4">
+            <div class="skeleton skeleton-card"></div>
+          </div>
+        </div>
+
+        <div id="no-results" class="text-center py-5" style="display: none">
+          <i
+            class="fas fa-search"
+            style="font-size: 3rem; color: var(--rose-200)"
+          ></i>
+          <p class="mt-3 text-muted fs-5">لا توجد منتجات مطابقة</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ NEWSLETTER ══ -->
+    <section class="newsletter-section" id="newsletter">
+      <div class="container">
+        <h2>انضمي لمجتمع الجمال</h2>
+        <p>اشتركي لتصلك أحدث العروض والنصائح والوصول المبكر للمنتجات الجديدة</p>
+        <div class="newsletter-input-wrap">
+          <input type="email" placeholder="أدخلي بريدك الإلكتروني..." />
+          <button onclick="subscribeNewsletter()">اشتركي</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ FOOTER ══ -->
+    <footer>
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-3 col-md-6">
+            <a class="brand-logo d-block mb-3" href="#"
+              >كارو<span>لينا</span></a
+            >
+            <p class="tagline">
+              مستحضرات تجميل فاخرة مصنوعة بحب ومكونات طبيعية لجمالك المشرق.
+            </p>
+            <div class="footer-social">
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-facebook-f"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-whatsapp"></i></a>
+            </div>
+          </div>
+          <div class="col-lg-2 col-md-6">
+            <h6>روابط سريعة</h6>
+            <ul>
+              <li><a href="./home.html">الرئيسية</a></li>
+              <li><a href="./products.html"> المنتجات</a></li>
+              <li><a href="./contact.html">تواصل معنا</a></li>
+              <li><a href="./about-us.html">من نحن</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <h6>خدمة العملاء</h6>
+            <ul>
+              <li><a href="#">سياسة الشحن</a></li>
+              <li><a href="#">الإرجاع والاستبدال</a></li>
+              <li><a href="#">الأسئلة الشائعة</a></li>
+              <li><a href="#">سياسة الخصوصية</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <h6>تواصلي معنا</h6>
+            <div class="footer-contact">
+              <div><i class="fas fa-envelope"></i> hello@karolina.com</div>
+              <div>
+                <i class="fab fa-whatsapp"></i>
+                <span id="footer-whatsapp">+20 100 000 0000</span>
+              </div>
+              <div><i class="fas fa-map-marker-alt"></i> القاهرة، مصر</div>
+            </div>
+          </div>
+        </div>
+        <hr class="footer-divider" />
+        <p class="footer-copy">© 2025 كارو لينا. جميع الحقوق محفوظة.</p>
+      </div>
+    </footer>
+
+    <!-- ══ CART OFFCANVAS ══ -->
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="cartDrawer"
+      dir="rtl"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">
+          <i
+            class="fas fa-shopping-bag me-2"
+            style="color: var(--rose-500)"
+          ></i>
+          سلة التسوق
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+        ></button>
+      </div>
+      <div class="offcanvas-body d-flex flex-column">
+        <div id="cart-items-list" class="flex-grow-1"></div>
+        <div id="cart-footer" style="display: none">
+          <div class="cart-total-row">
+            <span>الإجمالي</span>
+            <span id="cart-total">0 ج.م</span>
+          </div>
+          <button class="whatsapp-order-btn" onclick="orderViaWhatsApp()">
+            <i class="fab fa-whatsapp fa-lg"></i> اطلبي عبر واتساب
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PRODUCT MODAL ══ -->
+    <div class="modal fade" id="productModal" tabindex="-1" dir="rtl">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold" id="modal-title">تفاصيل المنتج</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-4 align-items-start">
+              <div class="col-md-5">
+                <img id="modal-img" src="" alt="" class="modal-product-img" />
+              </div>
+              <div class="col-md-7">
+                <span class="modal-category" id="modal-category"></span>
+                <h3 class="fw-bold mb-2" id="modal-name"></h3>
+                <p class="text-muted mb-3" id="modal-desc"></p>
+                <div class="modal-price mb-4" id="modal-price"></div>
+                <button
+                  class="btn-rose w-100"
+                  id="modal-add-btn"
+                  onclick="addFromModal()"
+                >
+                  <i class="fas fa-shopping-bag"></i> أضيفي إلى السلة
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/frontend/js/home.js"></script>
+  </body>
+</html>
