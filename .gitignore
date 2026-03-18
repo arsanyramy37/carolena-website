@@ -1,2 +1,11 @@
-# VS Code settings
+# VS Code
 .vscode/
+
+# نظام التشغيل
+Thumbs.db          # لو ويندوز
+
+# ملفات مؤقتة
+*.log
+node_modules/
+dist/
+build/

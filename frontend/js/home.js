@@ -1,106 +1,29 @@
 // ═══════════════════════════════════════════════════
-// ⚙️  CONFIG – غيّري هذه القيم فقط
+// ⚙️ CONFIG – غيّر هذه القيم فقط
 // ═══════════════════════════════════════════════════
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://gdryjfpxvniulamzdvma.supabase.co';
+const SUPABASE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcnlqZnB4dm5pdWxhbXpkdm1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1Nzg5ODAsImV4cCI6MjA4OTE1NDk4MH0.3Veth6_zon8iatPztuvIaOoUmnMUXJ2AhRNb3Yf_5fw';
 const WHATSAPP_NUM = '201000000000';
 const CURRENCY = 'ج.م';
-const TABLE_NAME = 'products';
+const TABLE_NAME = 'carolena-products';
+const PRODUCTS_PER_PAGE = 20; // عدد المنتجات في كل صفحة
+const HOME_PRODUCTS_COUNT = 6; // عدد المنتجات في الهوم بيج
 // ═══════════════════════════════════════════════════
 
-/* ─── Supabase Init ─── */
-let supabaseClient = null;
-const isConfigured = SUPABASE_URL !== 'YOUR_SUPABASE_URL';
-if (isConfigured) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-}
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ─── State ─── */
-let allProducts = [];
+let currentProducts = [];
+let homeProducts = []; // منتجات الهوم بيج
 let cart = JSON.parse(localStorage.getItem('lb_cart') || '[]');
 let currentFilter = 'الكل';
+let currentSearch = '';
 let modalProduct = null;
-
-/* ─── DEMO DATA ─── */
-const DEMO_PRODUCTS = [
-  {
-    id: 1,
-    name: 'مرطب وردة الربيع',
-    description:
-      'مرطب يومي فاخر بخلاصة الورد وحمض الهيالورونيك للترطيب العميق.',
-    price: 248,
-    category: 'العناية بالبشرة',
-    image_url:
-      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&q=75',
-  },
-  {
-    id: 2,
-    name: 'أحمر شفاه مخملي',
-    description:
-      'أحمر شفاه بتشطيب مخملي ثابت بظلال الورد الجميلة. غني بفيتامين E.',
-    price: 145,
-    category: 'مكياج',
-    image_url:
-      'https://images.unsplash.com/photo-1586495777744-4e6232bf2f8d?w=500&q=75',
-  },
-  {
-    id: 3,
-    name: 'بلوم روز او دو بارفان',
-    description:
-      'عطر زهري ساحر بنغمات الورد البلغاري والفاوانيا والمسك الأبيض.',
-    price: 495,
-    category: 'عطور',
-    image_url:
-      'https://images.unsplash.com/photo-1541643600914-78b084683702?w=500&q=75',
-  },
-  {
-    id: 4,
-    name: 'سيروم الحرير للشعر',
-    description: 'سيروم خفيف يمنح اللمعان ويكافح التجعد دون إثقال الشعر.',
-    price: 182,
-    category: 'العناية بالشعر',
-    image_url:
-      'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=75',
-  },
-  {
-    id: 5,
-    name: 'زيت الجسم بجوز الهند',
-    description: 'زيت جسم عضوي خفيف يُرطب البشرة ويمنحها نعومة استثنائية.',
-    price: 128,
-    category: 'العناية بالجسم',
-    image_url:
-      'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=75',
-  },
-  {
-    id: 6,
-    name: 'كريم الليل المضيء',
-    description:
-      'كريم ليلي مغذٍّ يجدد خلايا البشرة أثناء النوم لإشراقة صباحية.',
-    price: 312,
-    category: 'العناية بالبشرة',
-    image_url:
-      'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&q=75',
-  },
-  {
-    id: 7,
-    name: 'بالت ظلال العيون',
-    description: 'بالت من 24 درجة دافئة وعميقة لأنظار لا تُنسى طوال اليوم.',
-    price: 225,
-    category: 'مكياج',
-    image_url:
-      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=75',
-  },
-  {
-    id: 8,
-    name: 'شامبو بزيت الأرغان',
-    description:
-      'شامبو مغذٍّ بزيت الأرغان المغربي يصلح الشعر التالف ويمنحه الحياة.',
-    price: 148,
-    category: 'العناية بالشعر',
-    image_url:
-      'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=75',
-  },
-];
+let currentPage = 1;
+let totalPages = 1;
+let totalProducts = 0;
+let isHomePage = false;
 
 /* ══════════════════════════════════════════
    PAGE LOAD
@@ -109,13 +32,17 @@ window.addEventListener('load', async () => {
   const footerWa = document.getElementById('footer-whatsapp');
   if (footerWa) footerWa.textContent = '+' + WHATSAPP_NUM;
 
+  // نتأكد لو احنا في الهوم بيج ولا لا
+  isHomePage = !document.getElementById('pagination-container');
+
   updateCartUI();
 
-  if (isConfigured) {
-    await fetchProducts();
+  if (isHomePage) {
+    // في الهوم بيج: جلب 6 منتجات بس
+    await fetchHomeProducts();
   } else {
-    allProducts = DEMO_PRODUCTS;
-    renderProducts(allProducts);
+    // في صفحة المنتجات: جلب بالـ pagination
+    await initProducts();
   }
 
   setTimeout(() => {
@@ -128,127 +55,71 @@ window.addEventListener('load', async () => {
 });
 
 /* ══════════════════════════════════════════
-   NAVBAR – إغلاق عند اللمس خارجه
+   FETCH HOME PRODUCTS (6 منتجات بس)
 ══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-  /* ── إغلاق الناف بار لما تضغط برّا ── */
-  document.addEventListener('click', (e) => {
-    const navbar = document.querySelector('.navbar');
-    const collapse = document.getElementById('navMenu');
-    const toggler = document.querySelector('.navbar-toggler');
-
-    if (!navbar) return;
-
-    // لو القائمة مفتوحة والضغطة مش جوّاها ومش على الهامبرجر
-    const isOpen = collapse && collapse.classList.contains('show');
-    const clickedInside = navbar.contains(e.target);
-
-    if (isOpen && !clickedInside) {
-      const bsCollapse = bootstrap.Collapse.getInstance(collapse);
-      if (bsCollapse) bsCollapse.hide();
-    }
-  });
-
-  /* ── إغلاق الناف بار لما تضغط على لينك ── */
-  document.querySelectorAll('#navMenu .nav-link').forEach((link) => {
-    link.addEventListener('click', () => {
-      const collapse = document.getElementById('navMenu');
-      if (collapse && collapse.classList.contains('show')) {
-        const bsCollapse = bootstrap.Collapse.getInstance(collapse);
-        if (bsCollapse) bsCollapse.hide();
-      }
-    });
-  });
-
-  /* ── Scroll Top ── */
-  const scrollBtn = document.getElementById('scroll-top');
-  if (scrollBtn) {
-    scrollBtn.addEventListener('click', () =>
-      window.scrollTo({ top: 0, behavior: 'smooth' }),
-    );
-  }
-
-  /* ── إعادة رسم السلة عند فتح الـ offcanvas ── */
-  const cartDrawer = document.getElementById('cartDrawer');
-  if (cartDrawer)
-    cartDrawer.addEventListener('show.bs.offcanvas', renderCartItems);
-});
-
-window.addEventListener('scroll', () => {
-  const btn = document.getElementById('scroll-top');
-  if (btn) btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
-});
-
-/* ══════════════════════════════════════════
-   SUPABASE
-══════════════════════════════════════════ */
-async function fetchProducts() {
+async function fetchHomeProducts() {
   try {
     const { data, error } = await supabaseClient
       .from(TABLE_NAME)
       .select('*')
-      .order('id', { ascending: false });
+      .order('id', { ascending: true })
+      .limit(HOME_PRODUCTS_COUNT);
+
     if (error) throw error;
-    allProducts = data || [];
-    renderProducts(allProducts);
+
+    homeProducts = data || [];
+    renderHomeProducts();
   } catch (err) {
-    console.error('Supabase error:', err);
-    allProducts = DEMO_PRODUCTS;
-    renderProducts(allProducts);
-    showToast('⚠️ تعذّر الاتصال بقاعدة البيانات، تُعرض بيانات تجريبية');
+    console.error('خطأ في جلب منتجات الهوم:', err);
   }
 }
 
 /* ══════════════════════════════════════════
-   RENDER PRODUCTS
+   RENDER HOME PRODUCTS (عرض مدمج)
 ══════════════════════════════════════════ */
-function renderProducts(products) {
+function renderHomeProducts() {
   const grid = document.getElementById('products-grid');
   const noResults = document.getElementById('no-results');
 
+  // إزالة السكيلتون
   ['sk1', 'sk2', 'sk3', 'sk4'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
 
-  if (!products || products.length === 0) {
-    grid.innerHTML = '';
-    noResults.style.display = 'block';
+  if (!homeProducts || homeProducts.length === 0) {
+    if (grid) grid.innerHTML = '';
+    if (noResults) noResults.style.display = 'block';
     return;
   }
-  noResults.style.display = 'none';
 
-  grid.innerHTML = products
+  if (noResults) noResults.style.display = 'none';
+
+  // في الهوم بيج: col-6 (منتجين في الصف) على الموبايل، col-md-4 (3 منتجات) على التابلت
+  const html = homeProducts
     .map(
-      (p, i) => `
-    <div class="col-lg-3 col-md-4 col-sm-6"
-         style="animation: fadeInUp .5s ease ${i * 0.07}s both">
-      <div class="product-card h-100">
-        <div class="product-img-wrap">
-          <img
-            src="${p.image_url || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70'}"
-            alt="${p.name}" loading="lazy"
-            onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70'"
-          />
-          <span class="product-category-badge">${p.category || ''}</span>
-          <div class="product-actions">
-            <button class="action-btn" title="عرض التفاصيل"
-                    onclick="openProductModal(${p.id}); event.stopPropagation()">
+      (p) => `
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="product-card product-card-compact h-100">
+        <div class="product-img-wrap product-img-compact">
+          <img src="${p['img-url'] || ''}" alt="${p['product-name']}" loading="lazy"
+               onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70'" />
+          <span class="product-category-badge">${p.brand || ''}</span>
+          <div class="product-actions product-actions-compact">
+            <button class="action-btn action-btn-compact" onclick="openProductModal(${p.id}); event.stopPropagation()">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="action-btn" title="إضافة للسلة"
-                    onclick="addToCart(${p.id}); event.stopPropagation()">
+            <button class="action-btn action-btn-compact" onclick="addToCart(${p.id}); event.stopPropagation()">
               <i class="fas fa-shopping-bag"></i>
             </button>
           </div>
         </div>
-        <div class="product-body">
-          <h5>${p.name}</h5>
-          <p>${p.description || ''}</p>
-          <div class="product-footer">
-            <span class="product-price">${formatPrice(p.price)}</span>
-            <button class="add-cart-btn" onclick="addToCart(${p.id})">
-              <i class="fas fa-plus"></i> أضيفي
+        <div class="product-body product-body-compact">
+          <h5>${p['product-name']}</h5>
+          <div class="product-footer product-footer-compact">
+            <span class="product-price product-price-compact">${formatPrice(p.price)}</span>
+            <button class="add-cart-btn add-cart-btn-compact" onclick="addToCart(${p.id})">
+              <i class="fas fa-plus"></i>
             </button>
           </div>
         </div>
@@ -257,83 +128,352 @@ function renderProducts(products) {
   `,
     )
     .join('');
+
+  // إضافة زرار "عرض المزيد" في الآخر
+  const viewMoreHtml = `
+    <div class="col-12 text-center mt-4">
+      <a href="./products.html" class="btn-rose">
+        عرض المزيد <i class="fas fa-arrow-left"></i>
+      </a>
+    </div>
+  `;
+
+  if (grid) grid.innerHTML = html + viewMoreHtml;
+}
+
+/* ══════════════════════════════════════════
+   INIT PRODUCTS (جلب الـ Count الكلي فقط)
+══════════════════════════════════════════ */
+async function initProducts() {
+  try {
+    // جلب الـ Count الكلي فقط (مش محدود بـ 1000)
+    const { count, error: countError } = await supabaseClient
+      .from(TABLE_NAME)
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) throw countError;
+    totalProducts = count || 0;
+
+    console.log(`✅ إجمالي المنتجات: ${totalProducts}`);
+
+    // حساب عدد الصفحات
+    updateTotalPages();
+
+    // جلب الصفحة الأولى
+    await fetchProductsPage(1);
+  } catch (err) {
+    console.error('خطأ في جلب المنتجات:', err);
+    showToast('⚠️ تعذر جلب المنتجات');
+  }
+}
+
+function updateTotalPages() {
+  totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+  if (totalPages < 1) totalPages = 1;
+}
+
+/* ══════════════════════════════════════════
+   FETCH PRODUCTS PAGE (Server-side Pagination)
+══════════════════════════════════════════ */
+async function fetchProductsPage(page) {
+  try {
+    currentPage = page;
+
+    // حساب الـ range
+    const start = (page - 1) * PRODUCTS_PER_PAGE;
+    const end = start + PRODUCTS_PER_PAGE - 1;
+
+    console.log(`📄 جلب صفحة ${page} (من ${start} إلى ${end})`);
+
+    let query = supabaseClient
+      .from(TABLE_NAME)
+      .select('*', { count: 'exact' })
+      .order('id', { ascending: true })
+      .range(start, end);
+
+    // تطبيق الفلتر لو مش "الكل"
+    if (currentFilter !== 'الكل') {
+      query = query.eq('brand', currentFilter);
+    }
+
+    // تطبيق البحث
+    if (currentSearch) {
+      query = query.ilike('product-name', `%${currentSearch}%`);
+    }
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    currentProducts = data || [];
+
+    // لو فيه فلتر أو بحث، نحدث الـ totalPages
+    if (currentFilter !== 'الكل' || currentSearch) {
+      totalProducts = count || 0;
+      updateTotalPages();
+    }
+
+    renderProducts();
+    renderPagination();
+    updateProductsCount();
+  } catch (err) {
+    console.error('خطأ في جلب الصفحة:', err);
+    showToast('⚠️ تعذر جلب المنتجات');
+  }
+}
+
+/* ══════════════════════════════════════════
+   RENDER PRODUCTS (صفحة المنتجات)
+══════════════════════════════════════════ */
+function renderProducts() {
+  const grid = document.getElementById('products-grid');
+  const noResults = document.getElementById('no-results');
+
+  // إزالة السكيلتون
+  ['sk1', 'sk2', 'sk3', 'sk4'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  if (!currentProducts || currentProducts.length === 0) {
+    if (grid) grid.innerHTML = '';
+    if (noResults) noResults.style.display = 'block';
+    return;
+  }
+
+  if (noResults) noResults.style.display = 'none';
+
+  // في صفحة المنتجات: col-lg-3 col-md-4 col-sm-6 (الحجم العادي)
+  if (grid) {
+    grid.innerHTML = currentProducts
+      .map(
+        (p) => `
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="product-card h-100">
+          <div class="product-img-wrap">
+            <img src="${p['img-url'] || ''}" alt="${p['product-name']}" loading="lazy"
+                 onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=70'" />
+            <span class="product-category-badge">${p.brand || ''}</span>
+            <div class="product-actions">
+              <button class="action-btn" onclick="openProductModal(${p.id}); event.stopPropagation()">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn" onclick="addToCart(${p.id}); event.stopPropagation()">
+                <i class="fas fa-shopping-bag"></i>
+              </button>
+            </div>
+          </div>
+          <div class="product-body">
+            <h5>${p['product-name']}</h5>
+            <div class="product-footer">
+              <span class="product-price">${formatPrice(p.price)}</span>
+              <button class="add-cart-btn" onclick="addToCart(${p.id})">
+                <i class="fas fa-plus"></i> أضيفي
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+      )
+      .join('');
+  }
+}
+
+/* ══════════════════════════════════════════
+   RENDER NUMBERED PAGINATION (1 2 3 4 ...)
+══════════════════════════════════════════ */
+function renderPagination() {
+  const container = document.getElementById('pagination-container');
+  if (!container) return;
+
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="pagination-wrapper">';
+
+  // زر السابق
+  html += `
+    <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
+            onclick="changePage(${currentPage - 1})" 
+            ${currentPage === 1 ? 'disabled' : ''}>
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  `;
+
+  // أرقام الصفحات
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+  if (endPage - startPage < maxVisible - 1) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
+  // زر أول صفحة + ...
+  if (startPage > 1) {
+    html += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
+    if (startPage > 2) {
+      html += `<span class="pagination-dots">...</span>`;
+    }
+  }
+
+  // أرقام الصفحات
+  for (let i = startPage; i <= endPage; i++) {
+    html += `
+      <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+              onclick="changePage(${i})">
+        ${i}
+      </button>
+    `;
+  }
+
+  // ... + زر آخر صفحة
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      html += `<span class="pagination-dots">...</span>`;
+    }
+    html += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+  }
+
+  // زر التالي
+  html += `
+    <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
+            onclick="changePage(${currentPage + 1})" 
+            ${currentPage === totalPages ? 'disabled' : ''}>
+      <i class="fas fa-chevron-left"></i>
+    </button>
+  `;
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function updateProductsCount() {
+  const countEl = document.getElementById('products-count');
+  if (countEl) {
+    countEl.textContent = `عرض ${currentProducts.length} من ${totalProducts} منتج (صفحة ${currentPage} من ${totalPages})`;
+  }
+}
+
+async function changePage(page) {
+  if (page < 1 || page > totalPages || page === currentPage) return;
+
+  // Scroll to products section
+  const productsSection = document.getElementById('products');
+  if (productsSection) {
+    productsSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  await fetchProductsPage(page);
 }
 
 /* ══════════════════════════════════════════
    FILTER & SEARCH
 ══════════════════════════════════════════ */
-function filterByCategory(cat) {
+async function filterByCategory(cat) {
   currentFilter = cat;
+  currentPage = 1;
+
   document.querySelectorAll('.filter-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.textContent.trim() === cat);
   });
-  applyFilters();
-  if (cat !== 'الكل')
-    document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+
+  // نحتاج نجلب الـ count الجديد للفلتر
+  await updateCountForFilter();
+  await fetchProductsPage(1);
 }
 
-function searchProducts() {
-  applyFilters();
+async function updateCountForFilter() {
+  try {
+    let query = supabaseClient
+      .from(TABLE_NAME)
+      .select('*', { count: 'exact', head: true });
+
+    if (currentFilter !== 'الكل') {
+      query = query.eq('brand', currentFilter);
+    }
+
+    if (currentSearch) {
+      query = query.ilike('product-name', `%${currentSearch}%`);
+    }
+
+    const { count, error } = await query;
+    if (error) throw error;
+
+    totalProducts = count || 0;
+    updateTotalPages();
+  } catch (err) {
+    console.error('Error getting count:', err);
+  }
 }
 
-function applyFilters() {
-  const query = document
-    .getElementById('search-input')
-    .value.trim()
-    .toLowerCase();
-  let filtered = [...allProducts];
-  if (currentFilter !== 'الكل')
-    filtered = filtered.filter((p) => p.category === currentFilter);
-  if (query)
-    filtered = filtered.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        (p.description || '').toLowerCase().includes(query) ||
-        (p.category || '').toLowerCase().includes(query),
-    );
-  renderProducts(filtered);
+async function searchProducts() {
+  currentSearch = document.getElementById('search-input').value.trim();
+  currentPage = 1;
+
+  await updateCountForFilter();
+  await fetchProductsPage(1);
 }
 
 /* ══════════════════════════════════════════
-   PRODUCT MODAL
+   MODAL + CART
 ══════════════════════════════════════════ */
 function openProductModal(id) {
-  const p = allProducts.find((x) => x.id === id);
+  // نبحث في المنتجات المناسبة حسب الصفحة
+  let p = isHomePage
+    ? homeProducts.find((x) => x.id === id)
+    : currentProducts.find((x) => x.id === id);
+
   if (!p) return;
+
   modalProduct = p;
-  document.getElementById('modal-img').src = p.image_url || '';
-  document.getElementById('modal-img').alt = p.name;
-  document.getElementById('modal-name').textContent = p.name;
-  document.getElementById('modal-category').textContent = p.category || '';
-  document.getElementById('modal-desc').textContent = p.description || '';
+  document.getElementById('modal-img').src = p['img-url'] || '';
+  document.getElementById('modal-name').textContent = p['product-name'];
   document.getElementById('modal-price').textContent = formatPrice(p.price);
-  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-category').textContent = p.brand || '';
+  document.getElementById('modal-desc').textContent =
+    p.description || 'لا يوجد وصف';
+
   new bootstrap.Modal(document.getElementById('productModal')).show();
 }
 
 function addFromModal() {
-  if (modalProduct) addToCart(modalProduct.id);
-  const m = bootstrap.Modal.getInstance(
-    document.getElementById('productModal'),
-  );
-  if (m) m.hide();
+  if (!modalProduct) return;
+  addProductToCart(modalProduct);
 }
 
 /* ══════════════════════════════════════════
    CART
 ══════════════════════════════════════════ */
 function addToCart(id) {
-  const p = allProducts.find((x) => x.id === id);
+  // نبحث في المنتجات المناسبة
+  let p = isHomePage
+    ? homeProducts.find((x) => x.id === id)
+    : currentProducts.find((x) => x.id === id);
+
   if (!p) return;
-  const existing = cart.find((i) => i.id === id);
+  addProductToCart(p);
+}
+
+function addProductToCart(p) {
+  const existing = cart.find((i) => i.id === p.id);
   if (existing) {
     existing.qty++;
   } else {
-    cart.push({ ...p, qty: 1 });
+    cart.push({
+      id: p.id,
+      name: p['product-name'],
+      price: p.price,
+      image_url: p['img-url'],
+      qty: 1,
+    });
   }
   saveCart();
   updateCartUI();
-  showToast(`✓ تمت إضافة "${p.name}" إلى السلة`);
+  showToast(`✓ تمت إضافة "${p['product-name']}" إلى السلة`);
 }
 
 function removeFromCart(id) {
@@ -376,7 +516,7 @@ function renderCartItems() {
   }
 
   if (footer) footer.style.display = 'block';
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const total = cart.reduce((s, i) => s + (Number(i.price) || 0) * i.qty, 0);
   const totalEl = document.getElementById('cart-total');
   if (totalEl) totalEl.textContent = formatPrice(total);
 
@@ -384,10 +524,11 @@ function renderCartItems() {
     .map(
       (i) => `
     <div class="cart-item">
-      <img class="cart-item-img" src="${i.image_url || ''}" alt="${i.name}"
+      <img class="cart-item-img" src="${i.image_url || 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=60'}" 
+           alt="${i.name || 'منتج'}"
            onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=60'" />
       <div class="cart-item-info">
-        <h6>${i.name}</h6>
+        <h6>${i.name || 'منتج'}</h6>
         <div class="price">${formatPrice(i.price)}</div>
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="changeQty(${i.id}, -1)">−</button>
@@ -409,12 +550,12 @@ function renderCartItems() {
 ══════════════════════════════════════════ */
 function orderViaWhatsApp() {
   if (cart.length === 0) return;
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  let msg = '🛒 *طلب جديد من كارو لينا*\n\n';
+  const total = cart.reduce((s, i) => s + (Number(i.price) || 0) * i.qty, 0);
+  let msg = '🛒 *طلب جديد من كارو لينا*\\n\\n';
   cart.forEach((i) => {
-    msg += `• ${i.name} × ${i.qty} — ${formatPrice(i.price * i.qty)}\n`;
+    msg += `• ${i.name || 'منتج'} × ${i.qty} — ${formatPrice((Number(i.price) || 0) * i.qty)}\\n`;
   });
-  msg += `\n💰 *الإجمالي: ${formatPrice(total)}*\n\nأرجو تأكيد طلبي، شكراً! 🌸`;
+  msg += `\\n💰 *الإجمالي: ${formatPrice(total)}*\\n\\nأرجو تأكيد طلبي، شكراً! 🌸`;
   window.open(
     `https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,
     '_blank',
@@ -435,7 +576,7 @@ function subscribeNewsletter() {
    HELPERS
 ══════════════════════════════════════════ */
 function formatPrice(p) {
-  if (p === undefined || p === null) return '—';
+  if (p === undefined || p === null || isNaN(p)) return '—';
   return Number(p).toLocaleString('ar-EG') + ' ' + CURRENCY;
 }
 
