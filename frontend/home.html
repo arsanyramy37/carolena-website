@@ -151,10 +151,7 @@
         </div>
         <div class="row g-4">
           <div class="col-md-4 col-6">
-            <div
-              class="category-card"
-              onclick="filterByCategory('العناية بالبشرة')"
-            >
+            <div class="category-card" onclick="goToCategory('عناية بالبشرة')">
               <img
                 src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&q=75"
                 alt="العناية بالبشرة"
@@ -168,7 +165,7 @@
             </div>
           </div>
           <div class="col-md-4 col-6">
-            <div class="category-card" onclick="filterByCategory('مكياج')">
+            <div class="category-card" onclick="goToCategory('مكياج')">
               <img
                 src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500&q=75"
                 alt="مكياج"
@@ -182,7 +179,7 @@
             </div>
           </div>
           <div class="col-md-4 col-6">
-            <div class="category-card" onclick="filterByCategory('عطور')">
+            <div class="category-card" onclick="goToCategory('عطور')">
               <img
                 src="https://irfe.com/wp-content/uploads/2025/06/photo-of-a-variety-Different-luxury-perfumes-for-ads-display-in-the-style-of-professioanal-fashion-magazine.jpg"
                 alt="عطور"
@@ -196,10 +193,7 @@
             </div>
           </div>
           <div class="col-md-6 col-6">
-            <div
-              class="category-card"
-              onclick="filterByCategory('العناية بالشعر')"
-            >
+            <div class="category-card" onclick="goToCategory('عناية بالشعر')">
               <img
                 src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=75"
                 alt="العناية بالشعر"
@@ -213,10 +207,7 @@
             </div>
           </div>
           <div class="col-md-6">
-            <div
-              class="category-card"
-              onclick="filterByCategory('العناية بالجسم')"
-            >
+            <div class="category-card" onclick="goToCategory('عناية بالجسم')">
               <img
                 src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&q=75"
                 alt="العناية بالجسم"
@@ -414,5 +405,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/home.js"></script>
+
+    <!-- ⚡ دالة goToCategory للـ Categories -->
+    <script>
+      function goToCategory(category) {
+        // نحفظ الفلتر في localStorage
+        localStorage.setItem('selectedCategory', category);
+        // نروح لصفحة المنتجات
+        window.location.href = './products.html';
+      }
+    </script>
   </body>
 </html>

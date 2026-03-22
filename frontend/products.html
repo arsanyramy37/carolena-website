@@ -106,34 +106,47 @@
         <div
           class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4"
         >
+          <!-- الكاتيجوريز -->
           <div class="d-flex flex-wrap gap-2" id="filter-buttons">
             <button
               class="filter-btn active"
               onclick="filterByCategory('الكل')"
+              style="padding-top: -2.5px"
             >
               الكل
             </button>
             <button
               class="filter-btn"
-              onclick="filterByCategory('العناية بالبشرة')"
+              onclick="filterByCategory('عناية بالبشرة')"
+              style="padding-top: -2.5px"
             >
               العناية بالبشرة
             </button>
-            <button class="filter-btn" onclick="filterByCategory('مكياج')">
+            <button
+              class="filter-btn"
+              onclick="filterByCategory('مكياج')"
+              style="padding-top: -2.5px"
+            >
               مكياج
             </button>
-            <button class="filter-btn" onclick="filterByCategory('عطور')">
+            <button
+              class="filter-btn"
+              onclick="filterByCategory('عطور')"
+              style="padding-top: -2.5px"
+            >
               عطور
             </button>
             <button
               class="filter-btn"
-              onclick="filterByCategory('العناية بالشعر')"
+              onclick="filterByCategory('عناية بالشعر')"
+              style="padding-top: -2.5px"
             >
               العناية بالشعر
             </button>
             <button
               class="filter-btn"
-              onclick="filterByCategory('العناية بالجسم')"
+              onclick="filterByCategory('عناية بالجسم')"
+              style="padding-top: -2.5px"
             >
               العناية بالجسم
             </button>
@@ -145,8 +158,57 @@
               id="search-input"
               placeholder="ابحثي عن منتج..."
               oninput="searchProducts()"
+              style="padding-top: -2.5px"
             />
           </div>
+        </div>
+
+        <!-- فلترة البراندات -->
+        <div
+          class="d-flex flex-wrap gap-2 mb-4 align-items-center"
+          id="brand-buttons"
+        >
+          <span class="filter-label">البراند:</span>
+          <button
+            class="brand-btn"
+            data-brand="X"
+            onclick="filterByBrand('X')"
+            style="padding-top: -1px"
+          >
+            AXE
+          </button>
+          <button
+            class="brand-btn"
+            data-brand="Dermaelle"
+            onclick="filterByBrand('Dermaelle')"
+            style="padding-top: -1px"
+          >
+            Dermaelle
+          </button>
+          <button
+            class="brand-btn"
+            data-brand="L'Oreal"
+            onclick="filterByBrand('L\'Oreal')"
+            style="padding-top: -2.5px"
+          >
+            لوريال
+          </button>
+          <button
+            class="brand-btn"
+            data-brand="Nivea"
+            onclick="filterByBrand('Nivea')"
+            style="padding-top: -2.5px"
+          >
+            نيفيا
+          </button>
+          <button
+            class="brand-btn"
+            data-brand="Gillette"
+            onclick="filterByBrand('Gillette')"
+            style="padding-top: -2.5px"
+          >
+            جيليت
+          </button>
         </div>
 
         <!-- 🆕 عداد المنتجات -->

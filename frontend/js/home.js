@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-// ⚙️ CONFIG – غيّر هذه القيم فقط
+// ⚙️ CONFIG
 // ═══════════════════════════════════════════════════
 const SUPABASE_URL = 'https://gdryjfpxvniulamzdvma.supabase.co';
 const SUPABASE_KEY =
@@ -7,17 +7,18 @@ const SUPABASE_KEY =
 const WHATSAPP_NUM = '201000000000';
 const CURRENCY = 'ج.م';
 const TABLE_NAME = 'carolena-products';
-const PRODUCTS_PER_PAGE = 20; // عدد المنتجات في كل صفحة
-const HOME_PRODUCTS_COUNT = 6; // عدد المنتجات في الهوم بيج
+const PRODUCTS_PER_PAGE = 20;
+const HOME_PRODUCTS_COUNT = 6;
 // ═══════════════════════════════════════════════════
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ─── State ─── */
 let currentProducts = [];
-let homeProducts = []; // منتجات الهوم بيج
+let homeProducts = [];
 let cart = JSON.parse(localStorage.getItem('lb_cart') || '[]');
 let currentFilter = 'الكل';
+let currentBrandFilter = 'الكل';
 let currentSearch = '';
 let modalProduct = null;
 let currentPage = 1;
@@ -32,16 +33,12 @@ window.addEventListener('load', async () => {
   const footerWa = document.getElementById('footer-whatsapp');
   if (footerWa) footerWa.textContent = '+' + WHATSAPP_NUM;
 
-  // نتأكد لو احنا في الهوم بيج ولا لا
   isHomePage = !document.getElementById('pagination-container');
-
   updateCartUI();
 
   if (isHomePage) {
-    // في الهوم بيج: جلب 6 منتجات بس
     await fetchHomeProducts();
   } else {
-    // في صفحة المنتجات: جلب بالـ pagination
     await initProducts();
   }
 
@@ -55,7 +52,7 @@ window.addEventListener('load', async () => {
 });
 
 /* ══════════════════════════════════════════
-   FETCH HOME PRODUCTS (6 منتجات بس)
+   FETCH HOME PRODUCTS
 ══════════════════════════════════════════ */
 async function fetchHomeProducts() {
   try {
@@ -66,7 +63,6 @@ async function fetchHomeProducts() {
       .limit(HOME_PRODUCTS_COUNT);
 
     if (error) throw error;
-
     homeProducts = data || [];
     renderHomeProducts();
   } catch (err) {
@@ -74,15 +70,11 @@ async function fetchHomeProducts() {
   }
 }
 
-/* ══════════════════════════════════════════
-   RENDER HOME PRODUCTS (عرض مدمج)
-══════════════════════════════════════════ */
 function renderHomeProducts() {
   const grid = document.getElementById('products-grid');
   const noResults = document.getElementById('no-results');
 
-  // إزالة السكيلتون
-  ['sk1', 'sk2', 'sk3', 'sk4'].forEach((id) => {
+  ['sk1', 'sk2', 'sk3', 'sk4', 'sk5', 'sk6'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
@@ -95,7 +87,6 @@ function renderHomeProducts() {
 
   if (noResults) noResults.style.display = 'none';
 
-  // في الهوم بيج: col-6 (منتجين في الصف) على الموبايل، col-md-4 (3 منتجات) على التابلت
   const html = homeProducts
     .map(
       (p) => `
@@ -129,7 +120,6 @@ function renderHomeProducts() {
     )
     .join('');
 
-  // إضافة زرار "عرض المزيد" في الآخر
   const viewMoreHtml = `
     <div class="col-12 text-center mt-4">
       <a href="./products.html" class="btn-rose">
@@ -142,11 +132,16 @@ function renderHomeProducts() {
 }
 
 /* ══════════════════════════════════════════
-   INIT PRODUCTS (جلب الـ Count الكلي فقط)
+   INIT PRODUCTS
 ══════════════════════════════════════════ */
 async function initProducts() {
   try {
-    // جلب الـ Count الكلي فقط (مش محدود بـ 1000)
+    const savedCategory = localStorage.getItem('selectedCategory');
+    if (savedCategory) {
+      currentFilter = savedCategory;
+      localStorage.removeItem('selectedCategory');
+    }
+
     const { count, error: countError } = await supabaseClient
       .from(TABLE_NAME)
       .select('*', { count: 'exact', head: true });
@@ -156,11 +151,10 @@ async function initProducts() {
 
     console.log(`✅ إجمالي المنتجات: ${totalProducts}`);
 
-    // حساب عدد الصفحات
     updateTotalPages();
-
-    // جلب الصفحة الأولى
     await fetchProductsPage(1);
+
+    setTimeout(updateActiveButtons, 100);
   } catch (err) {
     console.error('خطأ في جلب المنتجات:', err);
     showToast('⚠️ تعذر جلب المنتجات');
@@ -173,17 +167,17 @@ function updateTotalPages() {
 }
 
 /* ══════════════════════════════════════════
-   FETCH PRODUCTS PAGE (Server-side Pagination)
+   FETCH PRODUCTS PAGE
 ══════════════════════════════════════════ */
 async function fetchProductsPage(page) {
   try {
     currentPage = page;
-
-    // حساب الـ range
     const start = (page - 1) * PRODUCTS_PER_PAGE;
     const end = start + PRODUCTS_PER_PAGE - 1;
 
-    console.log(`📄 جلب صفحة ${page} (من ${start} إلى ${end})`);
+    console.log(
+      `📄 جلب صفحة ${page} - Category: "${currentFilter}", Brand: "${currentBrandFilter}"`,
+    );
 
     let query = supabaseClient
       .from(TABLE_NAME)
@@ -191,24 +185,42 @@ async function fetchProductsPage(page) {
       .order('id', { ascending: true })
       .range(start, end);
 
-    // تطبيق الفلتر لو مش "الكل"
+    // ⚡ Category بـ ilike
     if (currentFilter !== 'الكل') {
-      query = query.eq('brand', currentFilter);
+      query = query.ilike('category', `%${currentFilter}%`);
     }
 
-    // تطبيق البحث
+    // ⚡ Brand بـ ilike (عشان نتجنب مشاكل المسافات)
+    if (currentBrandFilter !== 'الكل') {
+      console.log(`🔍 بندور على براند: "${currentBrandFilter}"`);
+      query = query.ilike('brand', `%${currentBrandFilter}%`);
+    }
+
+    // Search
     if (currentSearch) {
-      query = query.ilike('product-name', `%${currentSearch}%`);
+      const searchTerm = `%${currentSearch}%`;
+      query = query.or(
+        `product-name.ilike.${searchTerm},` +
+          `brand.ilike.${searchTerm},` +
+          `category.ilike.${searchTerm}`,
+      );
     }
 
     const { data, error, count } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Query error:', error);
+      throw error;
+    }
 
     currentProducts = data || [];
+    console.log(`✅ تم جلب ${currentProducts.length} منتج`);
 
-    // لو فيه فلتر أو بحث، نحدث الـ totalPages
-    if (currentFilter !== 'الكل' || currentSearch) {
+    if (
+      currentFilter !== 'الكل' ||
+      currentBrandFilter !== 'الكل' ||
+      currentSearch
+    ) {
       totalProducts = count || 0;
       updateTotalPages();
     }
@@ -216,6 +228,7 @@ async function fetchProductsPage(page) {
     renderProducts();
     renderPagination();
     updateProductsCount();
+    updateActiveButtons();
   } catch (err) {
     console.error('خطأ في جلب الصفحة:', err);
     showToast('⚠️ تعذر جلب المنتجات');
@@ -223,13 +236,12 @@ async function fetchProductsPage(page) {
 }
 
 /* ══════════════════════════════════════════
-   RENDER PRODUCTS (صفحة المنتجات)
+   RENDER PRODUCTS
 ══════════════════════════════════════════ */
 function renderProducts() {
   const grid = document.getElementById('products-grid');
   const noResults = document.getElementById('no-results');
 
-  // إزالة السكيلتون
   ['sk1', 'sk2', 'sk3', 'sk4'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.remove();
@@ -243,7 +255,6 @@ function renderProducts() {
 
   if (noResults) noResults.style.display = 'none';
 
-  // في صفحة المنتجات: col-lg-3 col-md-4 col-sm-6 (الحجم العادي)
   if (grid) {
     grid.innerHTML = currentProducts
       .map(
@@ -281,7 +292,7 @@ function renderProducts() {
 }
 
 /* ══════════════════════════════════════════
-   RENDER NUMBERED PAGINATION (1 2 3 4 ...)
+   PAGINATION
 ══════════════════════════════════════════ */
 function renderPagination() {
   const container = document.getElementById('pagination-container');
@@ -294,7 +305,6 @@ function renderPagination() {
 
   let html = '<div class="pagination-wrapper">';
 
-  // زر السابق
   html += `
     <button class="pagination-btn ${currentPage === 1 ? 'disabled' : ''}" 
             onclick="changePage(${currentPage - 1})" 
@@ -303,7 +313,6 @@ function renderPagination() {
     </button>
   `;
 
-  // أرقام الصفحات
   const maxVisible = 5;
   let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
   let endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -312,7 +321,6 @@ function renderPagination() {
     startPage = Math.max(1, endPage - maxVisible + 1);
   }
 
-  // زر أول صفحة + ...
   if (startPage > 1) {
     html += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
     if (startPage > 2) {
@@ -320,7 +328,6 @@ function renderPagination() {
     }
   }
 
-  // أرقام الصفحات
   for (let i = startPage; i <= endPage; i++) {
     html += `
       <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
@@ -330,7 +337,6 @@ function renderPagination() {
     `;
   }
 
-  // ... + زر آخر صفحة
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       html += `<span class="pagination-dots">...</span>`;
@@ -338,7 +344,6 @@ function renderPagination() {
     html += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
   }
 
-  // زر التالي
   html += `
     <button class="pagination-btn ${currentPage === totalPages ? 'disabled' : ''}" 
             onclick="changePage(${currentPage + 1})" 
@@ -361,7 +366,6 @@ function updateProductsCount() {
 async function changePage(page) {
   if (page < 1 || page > totalPages || page === currentPage) return;
 
-  // Scroll to products section
   const productsSection = document.getElementById('products');
   if (productsSection) {
     productsSection.scrollIntoView({ behavior: 'smooth' });
@@ -371,33 +375,97 @@ async function changePage(page) {
 }
 
 /* ══════════════════════════════════════════
-   FILTER & SEARCH
+   UPDATE ACTIVE BUTTONS
 ══════════════════════════════════════════ */
-async function filterByCategory(cat) {
-  currentFilter = cat;
-  currentPage = 1;
+function updateActiveButtons() {
+  console.log('🎨 تحديث الأزرار:', currentFilter, currentBrandFilter);
 
+  // أزرار الكاتيجوري
   document.querySelectorAll('.filter-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.textContent.trim() === cat);
+    const btnText = btn.textContent.trim();
+    const isActive =
+      btnText === currentFilter ||
+      (currentFilter !== 'الكل' && btnText.includes(currentFilter));
+    btn.classList.toggle('active', isActive);
   });
 
-  // نحتاج نجلب الـ count الجديد للفلتر
+  // أزرار البراند
+  document.querySelectorAll('.brand-btn').forEach((btn) => {
+    const btnBrand = btn.dataset.brand;
+    const isActive = btnBrand === currentBrandFilter;
+    btn.classList.toggle('active', isActive);
+  });
+}
+
+/* ══════════════════════════════════════════
+   FILTER BY CATEGORY
+══════════════════════════════════════════ */
+async function filterByCategory(cat) {
+  console.log('🔍 فلترة بالكاتيجوري:', cat);
+  currentFilter = cat;
+  currentPage = 1;
+  currentBrandFilter = 'الكل'; // ⚡ نمسح البراند
+  currentSearch = '';
+
+  updateActiveButtons();
+
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.value = '';
+
   await updateCountForFilter();
   await fetchProductsPage(1);
 }
 
+/* ══════════════════════════════════════════
+   FILTER BY BRAND (معدلة)
+══════════════════════════════════════════ */
+async function filterByBrand(brand) {
+  console.log('🔍 فلترة بالبراند:', brand);
+
+  // ⚡ نمسح كل الفلاتر الأول
+  currentFilter = 'الكل';
+  currentSearch = '';
+  currentBrandFilter = brand;
+  currentPage = 1;
+
+  // ⚡ نحدث الأزرار فوراً
+  updateActiveButtons();
+
+  // ⚡ نمسح البحث
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) searchInput.value = '';
+
+  // ⚡ نجيب الـ count والصفحة من الأول
+  await updateCountForFilter();
+  await fetchProductsPage(1);
+}
+
+/* ══════════════════════════════════════════
+   UPDATE COUNT FOR FILTER
+══════════════════════════════════════════ */
 async function updateCountForFilter() {
   try {
     let query = supabaseClient
       .from(TABLE_NAME)
       .select('*', { count: 'exact', head: true });
 
+    // Category بـ ilike
     if (currentFilter !== 'الكل') {
-      query = query.eq('brand', currentFilter);
+      query = query.ilike('category', `%${currentFilter}%`);
+    }
+
+    // ⚡ Brand بـ ilike
+    if (currentBrandFilter !== 'الكل') {
+      query = query.ilike('brand', `%${currentBrandFilter}%`);
     }
 
     if (currentSearch) {
-      query = query.ilike('product-name', `%${currentSearch}%`);
+      const searchTerm = `%${currentSearch}%`;
+      query = query.or(
+        `product-name.ilike.${searchTerm},` +
+          `brand.ilike.${searchTerm},` +
+          `category.ilike.${searchTerm}`,
+      );
     }
 
     const { count, error } = await query;
@@ -405,14 +473,22 @@ async function updateCountForFilter() {
 
     totalProducts = count || 0;
     updateTotalPages();
+    console.log(`📊 إجمالي بعد الفلتر: ${totalProducts}`);
   } catch (err) {
     console.error('Error getting count:', err);
   }
 }
 
+/* ══════════════════════════════════════════
+   SEARCH PRODUCTS
+══════════════════════════════════════════ */
 async function searchProducts() {
   currentSearch = document.getElementById('search-input').value.trim();
   currentPage = 1;
+  currentFilter = 'الكل';
+  currentBrandFilter = 'الكل';
+
+  updateActiveButtons();
 
   await updateCountForFilter();
   await fetchProductsPage(1);
@@ -422,7 +498,6 @@ async function searchProducts() {
    MODAL + CART
 ══════════════════════════════════════════ */
 function openProductModal(id) {
-  // نبحث في المنتجات المناسبة حسب الصفحة
   let p = isHomePage
     ? homeProducts.find((x) => x.id === id)
     : currentProducts.find((x) => x.id === id);
@@ -445,11 +520,7 @@ function addFromModal() {
   addProductToCart(modalProduct);
 }
 
-/* ══════════════════════════════════════════
-   CART
-══════════════════════════════════════════ */
 function addToCart(id) {
-  // نبحث في المنتجات المناسبة
   let p = isHomePage
     ? homeProducts.find((x) => x.id === id)
     : currentProducts.find((x) => x.id === id);
@@ -545,9 +616,6 @@ function renderCartItems() {
     .join('');
 }
 
-/* ══════════════════════════════════════════
-   WHATSAPP ORDER
-══════════════════════════════════════════ */
 function orderViaWhatsApp() {
   if (cart.length === 0) return;
   const total = cart.reduce((s, i) => s + (Number(i.price) || 0) * i.qty, 0);
@@ -562,9 +630,6 @@ function orderViaWhatsApp() {
   );
 }
 
-/* ══════════════════════════════════════════
-   NEWSLETTER
-══════════════════════════════════════════ */
 function subscribeNewsletter() {
   const input = document.querySelector('.newsletter-input-wrap input');
   if (!input || !input.value.trim()) return;
@@ -572,9 +637,6 @@ function subscribeNewsletter() {
   input.value = '';
 }
 
-/* ══════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════ */
 function formatPrice(p) {
   if (p === undefined || p === null || isNaN(p)) return '—';
   return Number(p).toLocaleString('ar-EG') + ' ' + CURRENCY;
