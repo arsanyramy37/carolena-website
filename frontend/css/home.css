@@ -703,6 +703,9 @@ body {
   border: 2px solid var(--rose-200);
   border-radius: 50px;
   padding: 6px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-main);
   font-size: 0.85rem;
   font-weight: 600;

@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════════════
-// ⚙️ CONFIG
-// ═══════════════════════════════════════════════════
 const SUPABASE_URL = 'https://gdryjfpxvniulamzdvma.supabase.co';
 const SUPABASE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkcnlqZnB4dm5pdWxhbXpkdm1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1Nzg5ODAsImV4cCI6MjA4OTE1NDk4MH0.3Veth6_zon8iatPztuvIaOoUmnMUXJ2AhRNb3Yf_5fw';
