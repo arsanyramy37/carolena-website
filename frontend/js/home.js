@@ -56,7 +56,7 @@ async function fetchHomeProducts() {
     const { data, error } = await supabaseClient
       .from(TABLE_NAME)
       .select('*')
-      .order('id', { ascending: true })
+      .order('id', { ascending: false })
       .limit(HOME_PRODUCTS_COUNT);
 
     if (error) throw error;
@@ -616,13 +616,13 @@ function renderCartItems() {
 function orderViaWhatsApp() {
   if (cart.length === 0) return;
   const total = cart.reduce((s, i) => s + (Number(i.price) || 0) * i.qty, 0);
-  let msg = '🛒 *طلب جديد من كارو لينا*\\n\\n';
+  let msg = '🛒 *طلب جديد من كارو لينا*\b';
   cart.forEach((i) => {
     msg += `• ${i.name || 'منتج'} × ${i.qty} — ${formatPrice((Number(i.price) || 0) * i.qty)}\\n`;
   });
-  msg += `\\n💰 *الإجمالي: ${formatPrice(total)}*\\n\\nأرجو تأكيد طلبي، شكراً! 🌸`;
+  msg += `\b💰 *الإجمالي: ${formatPrice(total)}*\bأرجو تأكيد طلبي، شكراً! 🌸`;
   window.open(
-    `https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(msg)}`,
+    `https://wa.me/${+201276905241}?text=${encodeURIComponent(msg)}`,
     '_blank',
   );
 }
