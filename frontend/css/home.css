@@ -657,11 +657,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .product-price {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 900;
   color: var(--rose-500);
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .add-cart-btn {
@@ -678,6 +682,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .add-cart-btn:hover {
   background: var(--rose-600);
